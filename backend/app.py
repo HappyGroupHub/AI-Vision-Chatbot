@@ -47,5 +47,17 @@ async def generate_text(request: Request):
     return response
 
 
+@app.post("/api/echo")
+async def echo(request: Request):
+    """Echo.
+
+    :param Request request: Request
+    :return dict response: Response
+    """
+    request_body = await request.json()
+    message = request_body['message']
+    return {'botResponse': message}
+
+
 if __name__ == '__main__':
     uvicorn.run(app, port=5000)

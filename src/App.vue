@@ -70,15 +70,15 @@ export default {
       // Add the user's message to the chat history
       this.chatHistory.push({ text: this.userInput, fromUser: true });
 
-      // Clear the input field
-      this.userInput = '';
-
-      // Send the message to the backend
+      // Send the message to the backend and clear the input
       console.log('Sending message:', this.userInput);
-      // const response = await sendMessageToBackend(this.userInput);
-      this.receiveMessage('This is a sample response from the bot.');
+      this.userInput = '';
+      const response = await sendMessageToBackend('echo', this.userInput);
+      console.log('Received response:', response);
+      this.receiveMessage(response);
+      // this.receiveMessage('This is a sample response from the bot.');
     },
-    receiveMessage(text, imageUrl, isImage = false) {
+    receiveMessage(text, imageUrl = null, isImage = false) {
       if (isImage) {
         // Add a separate message for the image description
         this.chatHistory.push({ text, fromUser: true });
