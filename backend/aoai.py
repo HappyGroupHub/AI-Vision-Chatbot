@@ -84,7 +84,7 @@ def generate_image_with_text(text):
     generated_image = client.images.generate(prompt=text)
     image_url = generated_image.data[0].url  # extract image URL from response
 
-    path = f'./downloads'
+    path = f'/downloads'
     if not os.path.exists(path):
         os.makedirs(path)
     file_path = \
@@ -92,5 +92,5 @@ def generate_image_with_text(text):
     results = requests.get(image_url).content  # download the image
     with open(file_path, "wb") as image_file:
         image_file.write(results)
-    response = {'image_url': image_url, 'file_path': file_path}
+    response = {'image_url': image_url, 'image_path': '../backend' + file_path}
     return response

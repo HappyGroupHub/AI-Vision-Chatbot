@@ -1,10 +1,9 @@
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 
-import aoai
 import ai_vision
+import aoai
 import utilities as utils
 
 app = FastAPI()
@@ -29,9 +28,10 @@ async def generate_image(request: Request):
     :return dict response: Response
     """
     request_body = await request.json()
-    prompt = request_body['text']
+    prompt = request_body['user_input']
     response = aoai.generate_image_with_text(prompt)
-    return FileResponse(response['image_path'])
+    return {'botResponse': '', 'imageUrl': response['image_url'],
+            'imagePath': response['image_path']}
 
 
 @app.post("/api/generate_text")
@@ -55,8 +55,8 @@ async def echo(request: Request):
     :return dict response: Response
     """
     request_body = await request.json()
-    message = request_body['message']
-    return {'botResponse': message}
+    user_input = request_body['user_input']
+    return {'botResponse': user_input}
 
 
 if __name__ == '__main__':

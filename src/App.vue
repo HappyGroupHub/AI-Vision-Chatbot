@@ -14,7 +14,7 @@
                 </div>
               </div>
               <p v-if="message.text">{{ message.text }}</p>
-              <img v-if="message.imageUrl" :src="message.imageUrl" alt="Uploaded Image" class="uploaded-image" />
+              <img v-if="message.imageUrl" :src="message.imageUrl" alt="Uploaded Image" class="uploaded-image"/>
             </div>
           </template>
           <template v-else-if="message.fromUser">
@@ -48,14 +48,14 @@
         <button class="upload-icon" @click="openFileInput">📷</button>
         <div class="send-icon" @click="sendMessage">➤</div>
         <!-- Hidden file input for image selection -->
-        <input ref="fileInput" type="file" accept="image/*" @change="handleImageUpload" style="display: none" />
+        <input ref="fileInput" type="file" accept="image/*" @change="handleImageUpload" style="display: none"/>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { sendMessageToBackend } from "./services/backendServices.js";
+import {sendMessageToBackend} from "./services/backendServices.js";
 
 export default {
   data() {
@@ -68,25 +68,33 @@ export default {
   methods: {
     async sendMessage() {
       // Add the user's message to the chat history
-      this.chatHistory.push({ text: this.userInput, fromUser: true });
+      this.chatHistory.push({text: this.userInput, fromUser: true});
 
       // Send the message to the backend and clear the input
+      let userInput = this.userInput;
       console.log('Sending message:', this.userInput);
       this.userInput = '';
-      const response = await sendMessageToBackend('echo', this.userInput);
+
+      let response = {botResponse: '', imagePath: '', imageUrl: ''};
+      response = await sendMessageToBackend('generate_image', userInput);
       console.log('Received response:', response);
-      this.receiveMessage(response);
-      // this.receiveMessage('This is a sample response from the bot.');
+
+      if (response.imageUrl) {
+        const imageUrl = await this.readImageFile(response.imageUrl);
+        this.receiveMessage(response.botResponse, imageUrl, true);
+      } else {
+        this.receiveMessage(response.botResponse);
+      }
     },
     receiveMessage(text, imageUrl = null, isImage = false) {
       if (isImage) {
         // Add a separate message for the image description
-        this.chatHistory.push({ text, fromUser: true });
+        this.chatHistory.push({text, fromUser: false});
         // Add the image message to the chat history with a user flag
-        this.chatHistory.push({ imageUrl, fromUser: true, isImage });
+        this.chatHistory.push({imageUrl, fromUser: false, isImage: true});
       } else {
         // Add the bot's response to the chat history
-        this.chatHistory.push({ text, fromUser: false });
+        this.chatHistory.push({text, fromUser: false});
       }
     },
     openFileInput() {
@@ -98,9 +106,14 @@ export default {
       if (file) {
         // Handle image upload logic
         const imageUrl = URL.createObjectURL(file);
-        this.receiveMessage(`User uploaded an image: ${file.name}`, imageUrl, true);
+        this.chatHistory.push({text: `User uploaded an image: ${file.name}`, fromUser: true});
+        this.chatHistory.push({imageUrl, fromUser: true, isImage: true});
       }
     },
+    async readImageFile(imageUrl) {
+  const blob = await fetch(imageUrl).then(response => response.blob());
+  return URL.createObjectURL(blob);
+},
   },
 };
 </script>
